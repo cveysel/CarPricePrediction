@@ -16,10 +16,10 @@ Users can input technical details such as brand, model year, horsepower, and fue
 ## 📸 Screenshots
 
 ### 🌙 Dark Theme
-![Dark Theme 1](Ekran Görüntüsü (110).png)
+![Dark Theme 1](CarPricePrediction/Ekran Görüntüsü (110).png)
 
 ### ☀️ Light Theme
-![Light Theme 1](Ekran Görüntüsü (111).png)
+![Light Theme 1](CarPricePrediction/Ekran Görüntüsü (111).png)
 
 ---
 
