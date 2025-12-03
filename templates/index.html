@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Price Prediction System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        h1 .emoji {
+            display: inline-block;
+        }
+
+        h1 .text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+            color: #333;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            display: none;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .result .price {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid rgba(102, 126, 234, 0.1);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span class="emoji">🚗</span> <span class="text">Car Price Prediction System</span></h1>
+        <p class="subtitle">Enter your vehicle specifications to get a price prediction</p>
+
+        <form id="carForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="Make">Make *</label>
+                    <select id="Make" name="Make" required>
+                        <option value="">Select...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="Year">Year *</label>
+                    <input type="number" id="Year" name="Year" required min="1990" max="2017" placeholder="e.g., 2015">
+                </div>
+
+                <div class="form-group">
+                    <label for="EngineFuelType">Engine Fuel Type *</label>
+                    <select id="EngineFuelType" name="EngineFuelType" required>
+                        <option value="">Select...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="EngineHP">Engine HP *</label>
+                    <input type="number" id="EngineHP" name="EngineHP" required step="0.1" placeholder="e.g., 200">
+                </div>
+
+                <div class="form-group">
+                    <label for="EngineCylinders">Engine Cylinders *</label>
+                    <input type="number" id="EngineCylinders" name="EngineCylinders" required step="0.1" placeholder="e.g., 4">
+                </div>
+
+                <div class="form-group">
+                    <label for="TransmissionType">Transmission Type *</label>
+                    <select id="TransmissionType" name="TransmissionType" required>
+                        <option value="">Select...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="Driven_Wheels">Driven Wheels *</label>
+                    <select id="Driven_Wheels" name="Driven_Wheels" required>
+                        <option value="">Select...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="Doors">Number of Doors *</label>
+                    <select id="Doors" name="Doors" required>
+                        <option value="">Select...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="VehicleSize">Vehicle Size *</label>
+                    <select id="VehicleSize" name="VehicleSize" required>
+                        <option value="">Select...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="VehicleStyle">Vehicle Style *</label>
+                    <select id="VehicleStyle" name="VehicleStyle" required>
+                        <option value="">Select...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="highwayMPG">Highway MPG *</label>
+                    <input type="number" id="highwayMPG" name="highwayMPG" required placeholder="e.g., 30">
+                </div>
+
+                <div class="form-group">
+                    <label for="cityMPG">City MPG *</label>
+                    <input type="number" id="cityMPG" name="cityMPG" required placeholder="e.g., 25">
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">Predict Price</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #667eea;">Predicting...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="result" id="result">
+            <h2>Predicted Price</h2>
+            <div class="price" id="price">$0</div>
+        </div>
+    </div>
+
+    <script>
+        let optionsData = {};
+
+        // Sayfa yüklendiğinde kategorik değerleri yükle
+        async function loadOptions() {
+            try {
+                const response = await fetch('/api/options');
+                optionsData = await response.json();
+
+                // Dropdown'ları doldur
+                populateSelect('Make', optionsData.Make);
+                populateSelect('EngineFuelType', optionsData.EngineFuelType);
+                populateSelect('TransmissionType', optionsData.TransmissionType);
+                populateSelect('Driven_Wheels', optionsData.Driven_Wheels);
+                populateSelect('VehicleSize', optionsData.VehicleSize);
+                populateSelect('VehicleStyle', optionsData.VehicleStyle);
+                populateSelect('Doors', optionsData.Doors);
+
+                // Sayısal alanlar için min/max değerleri ayarla
+                document.getElementById('Year').min = optionsData.Year.min;
+                document.getElementById('Year').max = optionsData.Year.max;
+                document.getElementById('EngineHP').min = optionsData.EngineHP.min;
+                document.getElementById('EngineHP').max = optionsData.EngineHP.max;
+                document.getElementById('EngineCylinders').min = optionsData.EngineCylinders.min;
+                document.getElementById('EngineCylinders').max = optionsData.EngineCylinders.max;
+                document.getElementById('highwayMPG').min = optionsData.highwayMPG.min;
+                document.getElementById('highwayMPG').max = optionsData.highwayMPG.max;
+                document.getElementById('cityMPG').min = optionsData.cityMPG.min;
+                document.getElementById('cityMPG').max = optionsData.cityMPG.max;
+            } catch (error) {
+                console.error('Error loading options:', error);
+                showError('An error occurred while loading options. Please refresh the page.');
+            }
+        }
+
+        function populateSelect(selectId, options) {
+            const select = document.getElementById(selectId);
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option;
+                optionElement.textContent = option;
+                select.appendChild(optionElement);
+            });
+        }
+
+        // Form gönderimi
+        document.getElementById('carForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const error = document.getElementById('error');
+
+            // Hata ve sonuç mesajlarını gizle
+            error.classList.remove('show');
+            result.classList.remove('show');
+
+            // Form verilerini topla
+            const formData = new FormData(e.target);
+            const data = {
+                Make: formData.get('Make'),
+                Year: parseInt(formData.get('Year')),
+                EngineFuelType: formData.get('EngineFuelType'),
+                EngineHP: parseFloat(formData.get('EngineHP')),
+                EngineCylinders: parseFloat(formData.get('EngineCylinders')),
+                TransmissionType: formData.get('TransmissionType'),
+                Driven_Wheels: formData.get('Driven_Wheels'),
+                Doors: parseFloat(formData.get('Doors')),
+                VehicleSize: formData.get('VehicleSize'),
+                VehicleStyle: formData.get('VehicleStyle'),
+                highwayMPG: parseInt(formData.get('highwayMPG')),
+                cityMPG: parseInt(formData.get('cityMPG'))
+            };
+
+            // Loading göster
+            submitBtn.disabled = true;
+            loading.classList.add('show');
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'An error occurred while making the prediction');
+                }
+
+                const resultData = await response.json();
+                const price = resultData.predicted_price;
+
+                // Sonucu göster
+                document.getElementById('price').textContent = formatPrice(price);
+                result.classList.add('show');
+
+                // Sayfayı sonuca kaydır
+                result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            } catch (err) {
+                showError(err.message || 'An error occurred. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                loading.classList.remove('show');
+            }
+        });
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(price);
+        }
+
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.classList.add('show');
+        }
+
+        // Sayfa yüklendiğinde seçenekleri yükle
+        loadOptions();
+    </script>
+</body>
+</html>
+
