@@ -19,6 +19,11 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         }
 
         .container {
@@ -29,6 +34,13 @@
             width: 100%;
             padding: 40px;
             animation: fadeIn 0.5s ease-in;
+            position: relative;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        body.dark .container {
+            background: #1e1e2e;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
         }
 
         @keyframes fadeIn {
@@ -42,11 +54,49 @@
             }
         }
 
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 2px solid #667eea;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.3em;
+            z-index: 10;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: scale(1.1);
+        }
+
+        body.dark .theme-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #fff;
+            color: #fff;
+        }
+
+        body.dark .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
         h1 {
             color: #333;
             text-align: center;
             margin-bottom: 10px;
             font-size: 2.5em;
+            transition: color 0.3s ease;
+        }
+
+        body.dark h1 {
+            color: #fff;
         }
 
         h1 .emoji {
@@ -65,6 +115,11 @@
             color: #666;
             margin-bottom: 30px;
             font-size: 1.1em;
+            transition: color 0.3s ease;
+        }
+
+        body.dark .subtitle {
+            color: #b0b0b0;
         }
 
         .form-grid {
@@ -84,6 +139,11 @@
             margin-bottom: 8px;
             font-weight: 600;
             font-size: 0.95em;
+            transition: color 0.3s ease;
+        }
+
+        body.dark label {
+            color: #d0d0d0;
         }
 
         input[type="text"],
@@ -98,12 +158,27 @@
             color: #333;
         }
 
+        body.dark input[type="text"],
+        body.dark input[type="number"],
+        body.dark select {
+            background: #2a2a3e;
+            border-color: #444;
+            color: #fff;
+        }
+
         input[type="text"]:focus,
         input[type="number"]:focus,
         select:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        body.dark input[type="text"]:focus,
+        body.dark input[type="number"]:focus,
+        body.dark select:focus {
+            border-color: #8b9aff;
+            box-shadow: 0 0 0 3px rgba(139, 154, 255, 0.2);
         }
 
         input[type="number"] {
@@ -155,6 +230,11 @@
             text-align: center;
             display: none;
             animation: slideUp 0.5s ease-out;
+            transition: background 0.3s ease;
+        }
+
+        body.dark .result {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
         }
 
         @keyframes slideUp {
@@ -193,6 +273,16 @@
             display: block;
         }
 
+        .loading p {
+            margin-top: 10px;
+            color: #667eea;
+            transition: color 0.3s ease;
+        }
+
+        body.dark .loading p {
+            color: #8b9aff;
+        }
+
         .spinner {
             border: 4px solid rgba(102, 126, 234, 0.1);
             border-top: 4px solid #667eea;
@@ -201,6 +291,18 @@
             height: 40px;
             animation: spin 1s linear infinite;
             margin: 0 auto;
+        }
+
+        body.dark .spinner {
+            border-top-color: #8b9aff;
+        }
+
+        .loading p {
+            transition: color 0.3s ease;
+        }
+
+        body.dark .loading p {
+            color: #8b9aff;
         }
 
         @keyframes spin {
@@ -233,11 +335,22 @@
             .form-grid {
                 grid-template-columns: 1fr;
             }
+
+            .theme-toggle {
+                top: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.1em;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+            <span id="themeIcon">🌙</span>
+        </button>
         <h1><span class="emoji">🚗</span> <span class="text">Car Price Prediction System</span></h1>
         <p class="subtitle">Enter your vehicle specifications to get a price prediction</p>
 
@@ -323,7 +436,7 @@
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p style="margin-top: 10px; color: #667eea;">Predicting...</p>
+            <p>Predicting...</p>
         </div>
 
         <div class="error" id="error"></div>
@@ -336,6 +449,39 @@
 
     <script>
         let optionsData = {};
+
+        // Tema yönetimi
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (savedTheme === 'dark') {
+                body.classList.add('dark');
+                themeIcon.textContent = '☀️';
+            } else {
+                body.classList.remove('dark');
+                themeIcon.textContent = '🌙';
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (body.classList.contains('dark')) {
+                body.classList.remove('dark');
+                themeIcon.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.add('dark');
+                themeIcon.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Tema toggle butonu
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
 
         // Sayfa yüklendiğinde kategorik değerleri yükle
         async function loadOptions() {
@@ -460,7 +606,8 @@
             error.classList.add('show');
         }
 
-        // Sayfa yüklendiğinde seçenekleri yükle
+        // Sayfa yüklendiğinde tema ve seçenekleri yükle
+        initTheme();
         loadOptions();
     </script>
 </body>
